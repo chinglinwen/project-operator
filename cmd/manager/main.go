@@ -13,6 +13,7 @@ import (
 
 	"wen/project-operator/pkg/apis"
 	"wen/project-operator/pkg/controller"
+	"wen/project-operator/pkg/project"
 
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	kubemetrics "github.com/operator-framework/operator-sdk/pkg/kube-metrics"
@@ -44,6 +45,10 @@ func printVersion() {
 	log.Info(fmt.Sprintf("Version of operator-sdk: %v", sdkVersion.Version))
 }
 
+var (
+	releaseServer = pflag.StringP("release-url", "", "http://release-test.newops.haodai.net", "release service url address")
+)
+
 func main() {
 	// Add the zap logger flag set to the CLI. The flag set must
 	// be added before calling pflag.Parse().
@@ -66,6 +71,9 @@ func main() {
 	logf.SetLogger(zap.Logger())
 
 	printVersion()
+
+	// init service url
+	project.Init(*releaseServer)
 
 	namespace, err := k8sutil.GetWatchNamespace()
 	if err != nil {

@@ -4,4 +4,5 @@ metadata:
   name: example-project
 spec:
   # Add fields here
-  size: 3
+  project: "demo/hello"
+  branch: "v1.0.0"

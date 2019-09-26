@@ -22,11 +22,6 @@ import (
 
 var log = logf.Log.WithName("controller_project")
 
-/**
-* USER ACTION REQUIRED: This is a scaffold file intended for the user to modify with their own Controller
-* business logic.  Delete these comments after modifying this file.*
- */
-
 // Add creates a new Project Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
 func Add(mgr manager.Manager) error {
@@ -101,7 +96,7 @@ func (r *ReconcileProject) Reconcile(request reconcile.Request) (reconcile.Resul
 		return reconcile.Result{}, err
 	}
 
-	// Define a new Pod object
+	// Define a new project
 	pod := newPodForCR(instance)
 
 	// Set Project instance as the owner and controller
@@ -124,9 +119,39 @@ func (r *ReconcileProject) Reconcile(request reconcile.Request) (reconcile.Resul
 	} else if err != nil {
 		return reconcile.Result{}, err
 	}
-
 	// Pod already exists - don't requeue
 	reqLogger.Info("Skip reconcile: Pod already exists", "Pod.Namespace", found.Namespace, "Pod.Name", found.Name)
+
+	// Check if the Project instance is marked to be deleted, which is
+	// indicated by the deletion timestamp being set.
+	isProjectMarkedToBeDeleted := instance.GetDeletionTimestamp() != nil
+	if isProjectMarkedToBeDeleted {
+		if contains(instance.GetFinalizers(), projectFinalizer) {
+			// Run finalization logic for instanceFinalizer. If the
+			// finalization logic fails, don't remove the finalizer so
+			// that we can retry during the next reconciliation.
+			if err := r.finalizeProject(reqLogger, instance); err != nil {
+				return reconcile.Result{}, err
+			}
+
+			// Remove instanceFinalizer. Once all finalizers have been
+			// removed, the object will be deleted.
+			instance.SetFinalizers(remove(instance.GetFinalizers(), projectFinalizer))
+			err := r.client.Update(context.TODO(), instance)
+			if err != nil {
+				return reconcile.Result{}, err
+			}
+		}
+		return reconcile.Result{}, nil
+	}
+
+	// Add finalizer for this CR
+	if !contains(instance.GetFinalizers(), projectFinalizer) {
+		if err := r.addFinalizer(reqLogger, instance); err != nil {
+			return reconcile.Result{}, err
+		}
+	}
+
 	return reconcile.Result{}, nil
 }
 

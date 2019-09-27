@@ -1,7 +1,8 @@
 apiVersion: project.haodai.com/v1alpha1
 kind: Project
 metadata:
-  name: example-project
+  name: demo
+  namespace: default
 spec:
-  project: "demo/hello"
-  branch: "v1.0.0"
+  branch: "v1.0.3"
+  project: "haha"

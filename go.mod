@@ -9,6 +9,7 @@ require (
 	github.com/mattn/go-colorable v0.1.2 // indirect
 	github.com/mattn/go-isatty v0.0.9 // indirect
 	github.com/operator-framework/operator-sdk v0.0.0-20190919225052-3a85983ecc72
+	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/spf13/pflag v1.0.3
 	gopkg.in/resty.v1 v1.12.0
 	k8s.io/api v0.0.0-20190612125737-db0771252981

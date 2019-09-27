@@ -13,12 +13,19 @@ func updateProjectForCR(cr *projectv1alpha1.Project) (err error) {
 	name := cr.GetName()
 
 	log.Info("creating project:", "name", ns+"/"+name)
-	pretty("project:", cr)
+	pretty("project cr", cr)
 
-	err = project.UpdateProject(ns, name, cr.Spec.Project)
+	last := cr.GetAnnotations()["kubectl.kubernetes.io/last-applied-configuration"]
+	n := cr.GetGeneration()
+
+	p := project.New(ns, name, cr.Spec.Project,
+		project.SetLastApplied(last),
+		project.SetGeneration(n))
+
+	err = p.UpdateProject()
 	if err != nil {
 		err = fmt.Errorf("UpdateProject err:%v", err)
-		log.Println(err)
+		log.Info("update project", "error", err)
 		return
 	}
 	return

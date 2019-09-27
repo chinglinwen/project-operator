@@ -20,7 +20,8 @@ func (r *ReconcileProject) finalizeProject(reqLogger logr.Logger, m *projectv1al
 	// Delete call api to delete
 	ns := m.GetNamespace()
 	name := m.GetName()
-	p := project.New(ns, name, m.Spec.Project)
+	spec := convertSpec(&m.Spec)
+	p := project.New(ns, name, spec)
 	out, err := p.Delete()
 	if err != nil {
 		reqLogger.Error(err, "Failed to delete project with finalizer", "output", out)

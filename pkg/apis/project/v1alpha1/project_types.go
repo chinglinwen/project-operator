@@ -16,7 +16,16 @@ type ProjectSpec struct {
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 
-	project.Project
+	// project.Project
+
+	// Project string `yaml:"project,omitempty" json:"project,omitempty"` // event.Project.PathWithNamespace
+	Branch string `yaml:"branch,omitempty" json:"branch,omitempty"` // parseBranch(event.Ref)
+	// Env       string    `yaml:"env,omitempty"`                              // default detect from branch, can be overwrite here
+	UserName       string `yaml:"userName,omitempty" json:"userName,omitempty"`
+	UserEmail      string `yaml:"userEmail,omitempty" json:"userEmail,omitempty"`
+	ReleaseMessage string `yaml:"releaseMessage,omitempty" json:"releaseMessage,omitempty"`
+	ReleaseAt      string `yaml:"releaseAt,omitempty" json:"releaseAt,omitempty"`
+	CommitId       string `yaml:"commitid,omitempty" json:"commitid,omitempty"`
 }
 
 // ProjectStatus defines the observed state of Project

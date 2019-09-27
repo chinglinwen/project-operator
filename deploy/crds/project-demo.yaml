@@ -4,5 +4,4 @@ metadata:
   name: demo
   namespace: default
 spec:
-  branch: "v1.0.3"
-  project: "haha"
+  branch: "v1.0.4"

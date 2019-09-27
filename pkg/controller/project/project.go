@@ -8,19 +8,32 @@ import (
 	prettyjson "github.com/hokaccha/go-prettyjson"
 )
 
+func convertSpec(in *projectv1alpha1.ProjectSpec) project.Project {
+	return project.Project{
+		// Project:        in.Project,
+		Branch:         in.Branch,
+		UserName:       in.UserName,
+		UserEmail:      in.UserEmail,
+		ReleaseMessage: in.ReleaseMessage,
+		ReleaseAt:      in.ReleaseAt,
+		CommitId:       in.CommitId,
+	}
+}
+
 func updateProjectForCR(cr *projectv1alpha1.Project) (err error) {
 	ns := cr.GetNamespace()
 	name := cr.GetName()
 
-	log.Info("creating project:", "name", ns+"/"+name)
+	log.Info("creating project:", "ns", ns, "name", name)
 	pretty("project cr", cr)
 
 	// last := cr.GetAnnotations()["kubectl.kubernetes.io/last-applied-configuration"]
-	n := cr.GetGeneration()
+	// n := cr.GetGeneration()
 
-	p := project.New(ns, name, cr.Spec.Project,
-		// project.SetLastApplied(last),
-		project.SetGeneration(n))
+	spec := convertSpec(&cr.Spec)
+	p := project.New(ns, name, project.Project(spec))
+	// project.SetLastApplied(last),
+	// project.SetGeneration(n))
 
 	err = p.UpdateProject()
 	if err != nil {

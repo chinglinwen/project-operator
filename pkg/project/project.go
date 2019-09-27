@@ -30,18 +30,29 @@ func Init(baseurl string) {
 // Project project release info
 type Project struct {
 	// Namespace string    `yaml:"namespace,omitempty" json:"namespace,omitempty"`
-	// Project string `yaml:"project,omitempty" json:"project,omitempty"` // event.Project.PathWithNamespace
-	Branch string `yaml:"branch,omitempty" json:"branch,omitempty"` // parseBranch(event.Ref)
-	// Env       string    `yaml:"env,omitempty"`                              // default detect from branch, can be overwrite here
+
+	// event.Project.PathWithNamespace
+	// Project string `yaml:"project,omitempty" json:"project,omitempty"`
+
+	// parseBranch(event.Ref)
+	Branch string `yaml:"branch,omitempty" json:"branch,omitempty"`
+
+	// default detect from branch, can be overwrite here
+	// Env       string    `yaml:"env,omitempty"`
+
 	UserName       string `yaml:"userName,omitempty" json:"userName,omitempty"`
 	UserEmail      string `yaml:"userEmail,omitempty" json:"userEmail,omitempty"`
 	ReleaseMessage string `yaml:"releaseMessage,omitempty" json:"releaseMessage,omitempty"`
 	ReleaseAt      string `yaml:"releaseAt,omitempty" json:"releaseAt,omitempty"`
+	// test env need this to generate image tag
+	CommitId string `yaml:"commitid,omitempty" json:"commitid,omitempty"`
 
+	// helper to avoid duplicate fields
 	namespace string
 	name      string
+
 	// lastApplied string
-	generation int64
+	// generation int64
 }
 
 func pretty(prefix, a interface{}) {
@@ -60,11 +71,11 @@ type ProjectOption func(*Project)
 // if program stop, it will invalid all cache
 // we can detect creationTimestamp, or just store the cache?
 
-func SetGeneration(n int64) ProjectOption {
-	return func(p *Project) {
-		p.generation = n
-	}
-}
+// func SetGeneration(n int64) ProjectOption {
+// 	return func(p *Project) {
+// 		p.generation = n
+// 	}
+// }
 
 func New(ns, name string, spec Project, options ...ProjectOption) *Project {
 	p := &Project{
@@ -228,9 +239,9 @@ func (p *Project) UpdateProject() (err error) {
 
 // see if updated, if so re-apply
 func changed(old, new *Project) bool {
-	if new.generation == 1 {
-		return true
-	}
+	// if new.generation == 1 {
+	// 	return true
+	// }
 	if old.Branch != new.Branch {
 		return true
 	}

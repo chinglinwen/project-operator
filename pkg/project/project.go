@@ -38,10 +38,10 @@ type Project struct {
 	ReleaseMessage string `yaml:"releaseMessage,omitempty" json:"releaseMessage,omitempty"`
 	ReleaseAt      string `yaml:"releaseAt,omitempty" json:"releaseAt,omitempty"`
 
-	namespace   string
-	name        string
-	lastApplied string
-	generation  int64
+	namespace string
+	name      string
+	// lastApplied string
+	generation int64
 }
 
 func pretty(prefix, a interface{}) {
@@ -51,11 +51,14 @@ func pretty(prefix, a interface{}) {
 
 type ProjectOption func(*Project)
 
-func SetLastApplied(last string) ProjectOption {
-	return func(p *Project) {
-		p.lastApplied = last
-	}
-}
+// func SetLastApplied(last string) ProjectOption {
+// 	return func(p *Project) {
+// 		p.lastApplied = last
+// 	}
+// }
+
+// if program stop, it will invalid all cache
+// we can detect creationTimestamp, or just store the cache?
 
 func SetGeneration(n int64) ProjectOption {
 	return func(p *Project) {

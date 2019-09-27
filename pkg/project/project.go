@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
 	resty "gopkg.in/resty.v1"
 )
@@ -30,13 +29,13 @@ func Init(baseurl string) {
 // Project project release info
 type Project struct {
 	// Namespace string    `yaml:"namespace,omitempty" json:"namespace,omitempty"`
-	Project   string    `yaml:"project,omitempty" json:"project,omitempty"` // event.Project.PathWithNamespace
-	Branch    string    `yaml:"branch,omitempty" json:"branch,omitempty"`   // parseBranch(event.Ref)
-	Env       string    `yaml:"env,omitempty"`                              // default detect from branch, can be overwrite here
-	UserName  string    `yaml:"user_name,omitempty" json:"user_name,omitempty"`
-	UserEmail string    `yaml:"user_email,omitempty" json:"user_email,omitempty"`
-	Message   string    `yaml:"message,omitempty" json:"message,omitempty"`
-	Time      time.Time `yaml:"time,omitempty" json:"time,omitempty"`
+	Project string `yaml:"project,omitempty" json:"project,omitempty"` // event.Project.PathWithNamespace
+	Branch  string `yaml:"branch,omitempty" json:"branch,omitempty"`   // parseBranch(event.Ref)
+	// Env       string    `yaml:"env,omitempty"`                              // default detect from branch, can be overwrite here
+	UserName       string `yaml:"userName,omitempty" json:"userName,omitempty"`
+	UserEmail      string `yaml:"userEmail,omitempty" json:"userEmail,omitempty"`
+	ReleaseMessage string `yaml:"releaseMessage,omitempty" json:"releaseMessage,omitempty"`
+	ReleaseAt      string `yaml:"releaseAt,omitempty" json:"releaseAt,omitempty"`
 }
 
 type ProjectStatus struct {

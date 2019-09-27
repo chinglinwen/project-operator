@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: project-operator
+  namespace: yunwei
 spec:
   replicas: 1
   selector:
@@ -16,18 +17,22 @@ spec:
       containers:
         - name: project-operator
           # Replace this with the built image name
-          image: REPLACE_IMAGE
+          image: harbor.haodai.net/ops/project-operator:v1
           command:
-          - project-operator
+            - /app/project-operator
           imagePullPolicy: Always
           env:
             - name: WATCH_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
+              value: ""
             - name: POD_NAME
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: "project-operator"
+          resources:
+            limits:
+              cpu: 2
+              memory: 4G
+      nodeSelector:
+        func: yunwei

@@ -4,7 +4,6 @@ import (
 	"context"
 
 	projectv1alpha1 "wen/project-operator/pkg/apis/project/v1alpha1"
-	"wen/project-operator/pkg/project"
 
 	"github.com/go-logr/logr"
 )
@@ -17,10 +16,10 @@ func (r *ReconcileProject) finalizeProject(reqLogger logr.Logger, m *projectv1al
 	// of finalizers include performing backups and deleting
 	// resources that are not owned by this CR, like a PVC.
 
-	// Delete deploy too? let's call api to delete
-	err := project.DeleteProject(m.Spec.TaskName)
+	// Delete call api to delete
+	out, err := m.Spec.Project.Delete()
 	if err != nil {
-		reqLogger.Error(err, "Failed to delete project with finalizer")
+		reqLogger.Error(err, "Failed to delete project with finalizer", "output", out)
 		return err
 	}
 	reqLogger.Info("Successfully finalized project")

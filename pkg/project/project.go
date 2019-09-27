@@ -91,7 +91,7 @@ type ProjectStatus struct {
 
 // so later, let trx generate this project yaml?
 
-// call api to apply
+// Apply call release api to apply to create project's yamls
 func (p *Project) Apply() (out string, err error) {
 	b, err := json.Marshal(p)
 	if err != nil {
@@ -112,23 +112,43 @@ func (p *Project) Apply() (out string, err error) {
 	return
 }
 
+// Delete call release api to delete to create project's yamls
+func (p *Project) Delete() (out string, err error) {
+	b, err := json.Marshal(p)
+	if err != nil {
+		return
+	}
+	url := fmt.Sprintf("/api/delete/%v", p.Project)
+	resp, e := resty.SetDebug(true).
+		R().
+		SetHeader("Content-Type", "application/json").
+		SetBody(b).
+		Post(BaseURL + url)
+	if e != nil {
+		err = e
+		log.Printf("get yaml for %v, err: %v\n", url, err)
+		return
+	}
+	out = string(resp.Body())
+	return
+}
+
 // udate status
 // deploy name? let's delegate?
 // only release status ( apply ok or error )
 
-func UpdateProject(p *Project) {
+func UpdateProject(p Project) (err error) {
 	// get exist one? then compare?
 
+	// compare image? call api to fetch project info?
+	// parse yaml?
+
 	// only image need to change? but the fields doesn't have image
+
+	return nil
 }
 
 // see if updated, if so re-apply
 func compare(old, new *Project) bool {
 	return false
-}
-
-// delete as needed
-func (p *Project) Delete() (out string, err error) {
-	out = "delete itself"
-	return
 }

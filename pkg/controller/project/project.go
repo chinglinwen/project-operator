@@ -9,11 +9,16 @@ import (
 )
 
 func updateProjectForCR(cr *projectv1alpha1.Project) (err error) {
-	log.Info("creating project:", "name", cr.GetName())
+	ns := cr.GetNamespace()
+	name := cr.GetName()
+
+	log.Info("creating project:", "name", ns+"/"+name)
 	pretty("project:", cr)
-	err = project.UpdateProject(cr.Spec.Project)
+
+	err = project.UpdateProject(ns, name, cr.Spec.Project)
 	if err != nil {
 		err = fmt.Errorf("UpdateProject err:%v", err)
+		log.Println(err)
 		return
 	}
 	return

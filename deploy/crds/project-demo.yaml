@@ -3,6 +3,5 @@ kind: Project
 metadata:
   name: example-project
 spec:
-  # Add fields here
   project: "demo/hello"
   branch: "v1.0.0"

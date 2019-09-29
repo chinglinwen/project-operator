@@ -31,6 +31,17 @@ func TestDelete(t *testing.T) {
 	fmt.Println("out: ", out)
 }
 
+func TestCheckImageExist(t *testing.T) {
+	p := New("ops", "netshoot3", Project{
+		Version: "latest",
+	})
+	out, err := p.CheckImageExist()
+	if err != nil {
+		t.Error("check err", err)
+	}
+	fmt.Println("out: ", out)
+}
+
 // func TestGetOldSpec(t *testing.T) {
 // 	last := "{\"apiVersion\":\"project.haodai.com/v1alpha1\",\"kind\":\"Project\",\"metadata\":{\"annotations\":{},\"name\":\"demo\",\"namespace\":\"default\"},\"spec\":{\"branch\":\"v1.0.0\"}}\n"
 

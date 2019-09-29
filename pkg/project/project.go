@@ -2,7 +2,6 @@ package project
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"strings"
@@ -207,8 +206,20 @@ func (p *Project) Apply() (out string, err error) {
 		return
 	}
 	out = string(resp.Body())
+	code, msg := parseResponse(out)
+	if code != 0 {
+		err = fmt.Errorf("%v", msg)
+		return
+	}
 	p.setcache()
+	log.Printf("apply ok, output: %v\n", out)
 	return
+}
+
+func parseResponse(body string) (int, string) {
+	code := gjson.Get(body, "code").Int()
+	message := gjson.Get(body, "message").String()
+	return int(code), message
 }
 
 // Delete call release api to delete to create project's yamls
@@ -229,12 +240,16 @@ func (p *Project) Delete() (out string, err error) {
 		return
 	}
 	out = string(resp.Body())
+	code, msg := parseResponse(out)
+	if code != 0 {
+		err = fmt.Errorf("%v", msg)
+		return
+	}
+
 	p.delcache()
 	log.Printf("delete ok, output: %v\n", out)
 	return
 }
-
-var ErrImageNotExist = errors.New("image not exist yet")
 
 // udate status
 // deploy name? let's delegate?
@@ -270,19 +285,25 @@ func (p *Project) UpdateProject() (err error) {
 }
 
 func (p *Project) CheckImageExist() (exist bool, err error) {
-	url := fmt.Sprintf("/api/imagecheck/%v/%v", p.getprojectpath(), p.env)
-	resp, e := resty. //SetDebug(true).
-				R().
-				SetHeader("Content-Type", "application/json").
-				SetQueryParam("tag", p.Version).
-				Get(BaseURL + url)
+	url := fmt.Sprintf("/api/imagecheck/%v", p.getprojectpath())
+	resp, e := resty.SetDebug(true).
+		R().
+		SetHeader("Content-Type", "application/json").
+		SetQueryParam("tag", p.Version).
+		Get(BaseURL + url)
 	if e != nil {
 		err = e
 		log.Printf("check image for %v, err: %v\n", url, err)
 		return
 	}
 	out := string(resp.Body())
-	exist = gjson.Get(out, "exist").Bool()
+	code, msg := parseResponse(out)
+	if code != 0 {
+		err = fmt.Errorf("%v", msg)
+		return
+	}
+
+	exist = gjson.Get(out, "data.exist").Bool()
 	return
 }
 

@@ -5,6 +5,8 @@ import (
 	projectv1alpha1 "wen/project-operator/pkg/apis/project/v1alpha1"
 	"wen/project-operator/pkg/project"
 
+	"errors"
+
 	prettyjson "github.com/hokaccha/go-prettyjson"
 )
 
@@ -18,6 +20,8 @@ func convertSpec(in *projectv1alpha1.ProjectSpec) project.Project {
 		ReleaseAt:      in.ReleaseAt,
 	}
 }
+
+var ErrImageNotExist = errors.New("image not exist yet, waiting...")
 
 func (r *ReconcileProject) updateProjectForCR(instance *projectv1alpha1.Project) (err error) {
 	ns := instance.GetNamespace()
@@ -39,7 +43,7 @@ func (r *ReconcileProject) updateProjectForCR(instance *projectv1alpha1.Project)
 		return
 	}
 	if !exist {
-		err = fmt.Errorf("image not exist yet, waiting...")
+		err = ErrImageNotExist
 		return
 	}
 

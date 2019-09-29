@@ -101,6 +101,9 @@ func (r *ReconcileProject) Reconcile(request reconcile.Request) (reconcile.Resul
 	err = r.updateProjectForCR(instance)
 	if err != nil {
 		status = err.Error()
+		if err == ErrImageNotExist {
+			err = nil // should we skip requeue? let harbor trigger again?
+		}
 	}
 
 	var updatestatus bool

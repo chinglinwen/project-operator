@@ -11,6 +11,7 @@ require (
 	github.com/operator-framework/operator-sdk v0.0.0-20190919225052-3a85983ecc72
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/spf13/pflag v1.0.3
+	github.com/tidwall/gjson v1.3.2
 	gopkg.in/resty.v1 v1.12.0
 	k8s.io/api v0.0.0-20190612125737-db0771252981
 	k8s.io/apimachinery v0.0.0-20190612125636-6a5db36e93ad

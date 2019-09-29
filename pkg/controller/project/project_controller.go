@@ -2,6 +2,7 @@ package project
 
 import (
 	"context"
+	"reflect"
 
 	projectv1alpha1 "wen/project-operator/pkg/apis/project/v1alpha1"
 
@@ -93,8 +94,28 @@ func (r *ReconcileProject) Reconcile(request reconcile.Request) (reconcile.Resul
 		return reconcile.Result{}, err
 	}
 
+	// we should check status first
+	status := "ok"
+
 	// Define a new project
-	err = updateProjectForCR(instance)
+	err = r.updateProjectForCR(instance)
+	if err != nil {
+		status = err.Error()
+	}
+
+	var updatestatus bool
+	if !reflect.DeepEqual(status, instance.Status.Status) {
+		instance.Status.Status = status
+		updatestatus = true
+	}
+	if updatestatus {
+		err := r.client.Status().Update(context.TODO(), instance)
+		if err != nil {
+			reqLogger.Error(err, "Failed to update project status.")
+			return reconcile.Result{}, err
+		}
+	}
+
 	if err != nil {
 		return reconcile.Result{}, err
 	}

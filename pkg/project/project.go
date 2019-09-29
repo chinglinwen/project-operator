@@ -2,8 +2,12 @@ package project
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
+	"strings"
+
+	"github.com/tidwall/gjson"
 
 	prettyjson "github.com/hokaccha/go-prettyjson"
 	resty "gopkg.in/resty.v1"
@@ -15,11 +19,28 @@ func Init(baseurl string) {
 	BaseURL = baseurl
 }
 
+const (
+	EnvOnline    = "online"
+	EnvPreOnline = "pre"
+	EnvTest      = "test"
+)
+
+func GetNameAndEnv(pname string) (name, env string) {
+	s := strings.Split(pname, "-")
+	n := len(s)
+	if n < 2 {
+		return pname, ""
+	}
+	name = strings.Join(s[:n-1], "-")
+	env = s[n-1]
+	return
+}
+
 // // Project project release info
 // type Project struct {
 // 	Namespace string `json:"namespace,omitempty"`
 // 	Project   string `json:"project,omitempty"` // event.Project.PathWithNamespace
-// 	Branch    string `json:"branch,omitempty"`  // parseBranch(event.Ref)
+// 	Version    string `json:"branch,omitempty"`  // parseVersion(event.Ref)
 // 	// Env       string    `json:"env,omitempty"`  // default detect from branch, can be overwrite here
 // 	UserName  string    `json:"user_name,omitempty"`
 // 	UserEmail string    `json:"user_email,omitempty"`
@@ -34,22 +55,21 @@ type Project struct {
 	// event.Project.PathWithNamespace
 	// Project string `yaml:"project,omitempty" json:"project,omitempty"`
 
-	// parseBranch(event.Ref)
-	Branch string `yaml:"branch,omitempty" json:"branch,omitempty"`
-
-	// default detect from branch, can be overwrite here
-	// Env       string    `yaml:"env,omitempty"`
+	// parseVersion(event.Ref)
+	Version string `yaml:"version,omitempty" json:"version,omitempty"`
 
 	UserName       string `yaml:"userName,omitempty" json:"userName,omitempty"`
 	UserEmail      string `yaml:"userEmail,omitempty" json:"userEmail,omitempty"`
 	ReleaseMessage string `yaml:"releaseMessage,omitempty" json:"releaseMessage,omitempty"`
 	ReleaseAt      string `yaml:"releaseAt,omitempty" json:"releaseAt,omitempty"`
+
 	// test env need this to generate image tag
-	CommitId string `yaml:"commitid,omitempty" json:"commitid,omitempty"`
+	// CommitId string `yaml:"commitid,omitempty" json:"commitid,omitempty"`
 
 	// helper to avoid duplicate fields
 	namespace string
 	name      string
+	env       string
 
 	// lastApplied string
 	// generation int64
@@ -77,9 +97,10 @@ type ProjectOption func(*Project)
 // 	}
 // }
 
-func New(ns, name string, spec Project, options ...ProjectOption) *Project {
+func New(ns, pname string, spec Project, options ...ProjectOption) *Project {
+	name, env := GetNameAndEnv(pname)
 	p := &Project{
-		Branch:         spec.Branch,
+		Version:        spec.Version,
 		UserName:       spec.UserName,
 		UserEmail:      spec.UserEmail,
 		ReleaseMessage: spec.ReleaseMessage,
@@ -87,6 +108,7 @@ func New(ns, name string, spec Project, options ...ProjectOption) *Project {
 
 		namespace: ns,
 		name:      name,
+		env:       env,
 	}
 	for _, op := range options {
 		op(p)
@@ -107,6 +129,12 @@ func (p *Project) MarshalJSON() ([]byte, error) {
 
 type ProjectStatus struct {
 	Status string `json:"status,omitempty"`
+
+	// default detect from branch, can be overwrite here
+	// Env       string    `yaml:"env,omitempty"`
+
+	// to know if the deploy ready or not
+	Image string `yaml:"image,omitempty" json:"image,omitempty"`
 }
 
 // mostly let's just call api
@@ -167,7 +195,7 @@ func (p *Project) Apply() (out string, err error) {
 	if err != nil {
 		return
 	}
-	url := fmt.Sprintf("/api/apply/%v", p.getprojectpath())
+	url := fmt.Sprintf("/api/apply/%v/%v", p.getprojectpath(), p.env)
 	resp, e := resty. //SetDebug(true).
 				R().
 				SetHeader("Content-Type", "application/json").
@@ -189,7 +217,7 @@ func (p *Project) Delete() (out string, err error) {
 	if err != nil {
 		return
 	}
-	url := fmt.Sprintf("/api/delete/%v", p.getprojectpath())
+	url := fmt.Sprintf("/api/delete/%v/%v", p.getprojectpath(), p.env)
 	resp, e := resty. //SetDebug(true).
 				R().
 				SetHeader("Content-Type", "application/json").
@@ -206,6 +234,8 @@ func (p *Project) Delete() (out string, err error) {
 	return
 }
 
+var ErrImageNotExist = errors.New("image not exist yet")
+
 // udate status
 // deploy name? let's delegate?
 // only release status ( apply ok or error )
@@ -217,6 +247,8 @@ func (p *Project) Delete() (out string, err error) {
 func (p *Project) UpdateProject() (err error) {
 	log.Printf("try update project: %v/%v\n", p.namespace, p.name)
 
+	// how to handle program restart? persist cache?
+	// though, it can be apply again with the same yaml
 	old := getcache(p.getprojectpath())
 	if old == nil || changed(old, p) {
 		pretty("project", p)
@@ -237,12 +269,29 @@ func (p *Project) UpdateProject() (err error) {
 	return
 }
 
+func (p *Project) CheckImageExist() (exist bool, err error) {
+	url := fmt.Sprintf("/api/imagecheck/%v/%v", p.getprojectpath(), p.env)
+	resp, e := resty. //SetDebug(true).
+				R().
+				SetHeader("Content-Type", "application/json").
+				SetQueryParam("tag", p.Version).
+				Get(BaseURL + url)
+	if e != nil {
+		err = e
+		log.Printf("check image for %v, err: %v\n", url, err)
+		return
+	}
+	out := string(resp.Body())
+	exist = gjson.Get(out, "exist").Bool()
+	return
+}
+
 // see if updated, if so re-apply
 func changed(old, new *Project) bool {
 	// if new.generation == 1 {
 	// 	return true
 	// }
-	if old.Branch != new.Branch {
+	if old.Version != new.Version {
 		return true
 	}
 	if old.ReleaseAt != new.ReleaseAt {

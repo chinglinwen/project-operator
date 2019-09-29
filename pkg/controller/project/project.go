@@ -11,29 +11,37 @@ import (
 func convertSpec(in *projectv1alpha1.ProjectSpec) project.Project {
 	return project.Project{
 		// Project:        in.Project,
-		Branch:         in.Branch,
+		Version:        in.Version,
 		UserName:       in.UserName,
 		UserEmail:      in.UserEmail,
 		ReleaseMessage: in.ReleaseMessage,
 		ReleaseAt:      in.ReleaseAt,
-		CommitId:       in.CommitId,
 	}
 }
 
-func updateProjectForCR(cr *projectv1alpha1.Project) (err error) {
-	ns := cr.GetNamespace()
-	name := cr.GetName()
+func (r *ReconcileProject) updateProjectForCR(instance *projectv1alpha1.Project) (err error) {
+	ns := instance.GetNamespace()
+	name := instance.GetName()
 
 	log.Info("creating project:", "ns", ns, "name", name)
-	pretty("project cr", cr)
+	pretty("project instance", instance)
 
 	// last := cr.GetAnnotations()["kubectl.kubernetes.io/last-applied-configuration"]
 	// n := cr.GetGeneration()
 
-	spec := convertSpec(&cr.Spec)
+	spec := convertSpec(&instance.Spec)
 	p := project.New(ns, name, project.Project(spec))
 	// project.SetLastApplied(last),
 	// project.SetGeneration(n))
+
+	exist, err := p.CheckImageExist()
+	if err != nil {
+		return
+	}
+	if !exist {
+		err = fmt.Errorf("image not exist yet, waiting...")
+		return
+	}
 
 	err = p.UpdateProject()
 	if err != nil {

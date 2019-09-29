@@ -19,7 +19,7 @@ type ProjectSpec struct {
 	// project.Project
 
 	// Project string `yaml:"project,omitempty" json:"project,omitempty"` // event.Project.PathWithNamespace
-	Version string `yaml:"branch,omitempty" json:"branch,omitempty"` // parseVersion(event.Ref)
+	Version string `yaml:"version,omitempty" json:"version,omitempty"` // parseVersion(event.Ref)
 
 	// Env       string    `yaml:"env,omitempty"`                              // default detect from branch, can be overwrite here
 	UserName       string `yaml:"userName,omitempty" json:"userName,omitempty"`

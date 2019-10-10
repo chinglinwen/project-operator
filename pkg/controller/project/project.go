@@ -40,12 +40,15 @@ func (r *ReconcileProject) updateProjectForCR(instance *projectv1alpha1.Project)
 
 	exist, err := p.CheckImageExist()
 	if err != nil {
-		return
+		log.Info("image check err: ", err)
+		err = nil
+		// return
 	}
-	if !exist {
-		err = ErrImageNotExist
-		return
-	}
+	_ = exist
+	// if !exist {
+	// 	err = ErrImageNotExist
+	// 	return
+	// }
 
 	err = p.UpdateProject()
 	if err != nil {

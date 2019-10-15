@@ -52,7 +52,7 @@ func (r *ReconcileProject) updateProjectForCR(instance *projectv1alpha1.Project)
 
 	err = p.UpdateProject()
 	if err != nil {
-		err = fmt.Errorf("UpdateProject err:%v", err)
+		// err = fmt.Errorf("UpdateProject err:%v", err)
 		log.Info("update project", "error", err)
 		return
 	}

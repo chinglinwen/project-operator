@@ -271,7 +271,8 @@ func (p *Project) UpdateProject() (err error) {
 		var out string
 		out, err = p.Apply()
 		if err != nil {
-			err = fmt.Errorf("apply err: %v, output: %v", err, out)
+			log.Printf("apply oerr, output: %v\n", out)
+			err = fmt.Errorf("apply err: %v", err)
 			return
 		}
 		log.Printf("apply ok, output: %v\n", out)
@@ -286,11 +287,11 @@ func (p *Project) UpdateProject() (err error) {
 
 func (p *Project) CheckImageExist() (exist bool, err error) {
 	url := fmt.Sprintf("/api/imagecheck/%v", p.getprojectpath())
-	resp, e := resty.SetDebug(true).
-		R().
-		SetHeader("Content-Type", "application/json").
-		SetQueryParam("tag", p.Version).
-		Get(BaseURL + url)
+	resp, e := resty. //SetDebug(true).
+				R().
+				SetHeader("Content-Type", "application/json").
+				SetQueryParam("tag", p.Version).
+				Get(BaseURL + url)
 	if e != nil {
 		err = e
 		log.Printf("check image for %v, err: %v\n", url, err)

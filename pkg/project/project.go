@@ -217,6 +217,9 @@ func (p *Project) Apply() (out string, err error) {
 }
 
 func parseResponse(body string) (int, string) {
+	if !gjson.Valid(body) {
+		return -1, body
+	}
 	code := gjson.Get(body, "code").Int()
 	message := gjson.Get(body, "message").String()
 	return int(code), message

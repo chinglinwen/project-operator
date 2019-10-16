@@ -46,7 +46,7 @@ func printVersion() {
 }
 
 var (
-	releaseServer = pflag.StringP("release-url", "", "http://release-test.newops.haodai.net", "release service url address")
+	releaseServer = pflag.StringP("release-url", "", "http://release.haodai.net", "release service url address")
 )
 
 func main() {

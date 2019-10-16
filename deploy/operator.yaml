@@ -179,7 +179,7 @@ spec:
           command:
             - /app/project-operator
             - --release-url
-            - http://release.newops.haodai.net
+            - http://release.haodai.net
           imagePullPolicy: Always
           env:
             - name: WATCH_NAMESPACE

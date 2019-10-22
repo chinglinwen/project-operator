@@ -288,28 +288,30 @@ func (p *Project) UpdateProject() (err error) {
 	return
 }
 
-func (p *Project) CheckImageExist() (exist bool, err error) {
-	url := fmt.Sprintf("/api/imagecheck/%v", p.getprojectpath())
-	resp, e := resty. //SetDebug(true).
-				R().
-				SetHeader("Content-Type", "application/json").
-				SetQueryParam("tag", p.Version).
-				Get(BaseURL + url)
-	if e != nil {
-		err = e
-		log.Printf("check image for %v, err: %v\n", url, err)
-		return
-	}
-	out := string(resp.Body())
-	code, msg := parseResponse(out)
-	if code != 0 {
-		err = fmt.Errorf("%v", msg)
-		return
-	}
+// let's do check based on time? if image not exist, it actuall
+// will not create project?
+// func (p *Project) CheckImageExist() (exist bool, err error) {
+// 	url := fmt.Sprintf("/api/imagecheck/%v", p.getprojectpath())
+// 	resp, e := resty. //SetDebug(true).
+// 				R().
+// 				SetHeader("Content-Type", "application/json").
+// 				SetQueryParam("tag", p.Version).
+// 				Get(BaseURL + url)
+// 	if e != nil {
+// 		err = e
+// 		log.Printf("check image for %v, err: %v\n", url, err)
+// 		return
+// 	}
+// 	out := string(resp.Body())
+// 	code, msg := parseResponse(out)
+// 	if code != 0 {
+// 		err = fmt.Errorf("%v", msg)
+// 		return
+// 	}
 
-	exist = gjson.Get(out, "data.exist").Bool()
-	return
-}
+// 	exist = gjson.Get(out, "data.exist").Bool()
+// 	return
+// }
 
 // see if updated, if so re-apply
 func changed(old, new *Project) bool {
